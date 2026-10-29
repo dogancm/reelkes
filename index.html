@@ -1,10 +1,295 @@
-YouTube linkinden Reels kesitleri yapan bir uygulama yap (koyu sıcak tema, mobil öncelikli, Türkçe).
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1c1814">
+<title>ReelKes — Linkten Reels kesitleri</title>
+<style>
+:root{color-scheme:dark;--bg:#1c1814;--panel:#26201a;--line:#3a3128;--acc:#ff9d4d;--text:#f4ede4;--muted:#b6a998}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px system-ui,sans-serif}
+main{max-width:760px;margin:auto;padding:22px 16px 60px}
+.tag{color:var(--acc);font-weight:800;font-size:13px;letter-spacing:.14em}
+h1{font-size:clamp(26px,6vw,38px);margin:6px 0 4px}
+h2{font-size:19px;margin:0 0 8px}
+p{color:var(--muted);line-height:1.5;margin:6px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin:16px 0}
+label{display:block;margin:12px 0 6px;color:#e3d8c8;font-weight:600;font-size:14px}
+input{width:100%;padding:13px;border-radius:11px;border:1px solid var(--line);background:#16120e;color:var(--text);font:inherit}
+button{border:0;border-radius:12px;padding:12px 16px;font-weight:800;font-size:15px;cursor:pointer;background:var(--acc);color:#2a1604;margin:8px 8px 0 0}
+button.s{background:#3a3128;color:var(--text)}
+button.sm{padding:9px 12px;font-size:13px;margin:0}
+button:disabled{opacity:.5}
+.row{display:flex;gap:10px}
+.row>input{flex:1}
+.row>button{margin:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hidden{display:none!important}
+.v16{position:relative;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;margin-top:8px}
+.v16 iframe{width:100%;height:100%;display:block}
+.msg{margin-top:10px;padding:11px 13px;border-radius:10px;background:#16120e;border:1px solid var(--line);color:#ffd9b3;font-size:14px;white-space:pre-wrap}
+.warn{border-left:3px solid #ffc56a;padding-left:12px;font-size:13px}
+.hint{font-size:13px}
+.clip{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px}
+.clip .top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.clip .btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+small{color:var(--muted)}
+.phone{position:relative;width:min(100%,320px);aspect-ratio:9/16;margin:10px auto 0;background:#000;border-radius:22px;overflow:hidden;border:1px solid var(--line)}
+.vwrap{position:absolute;top:0;left:50%;height:100%;aspect-ratio:16/9;transform:translateX(-50%)}
+.vwrap iframe{width:100%!important;height:100%!important;display:block;border:0}
+.shield{position:absolute;inset:0;z-index:2}
+.ovl{position:absolute;left:0;right:0;bottom:0;z-index:3;pointer-events:none;padding:60px 14px 16px;background:linear-gradient(transparent,rgba(0,0,0,.85))}
+.ovl .t{font-weight:800;font-size:15px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ovl .c{font-size:12px;color:#e6dccd;margin-top:3px}
+.ovl .k{display:inline-block;margin-top:8px;background:var(--acc);color:#2a1604;font-weight:800;font-size:12px;padding:4px 9px;border-radius:99px}
+.ovl .z{font-size:11px;color:#d9ccba;margin-top:6px}
+.bar{position:absolute;top:0;left:0;right:0;height:4px;background:#ffffff33;z-index:4}
+.bar i{display:block;height:100%;width:0;background:var(--acc)}
+.ctl{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.ctl button{margin:0}
+@media(max-width:520px){.grid{grid-template-columns:1fr}}
+</style></head>
+<body><main>
+<div class="tag">REELKES</div>
+<h1>YouTube linkinden Reels kesitleri</h1>
+<p>Linki yapıştır, bölümleri işaretle, her bölümü dikey Reels kadrajında izle ve paylaş.</p>
+<div id="fileWarn" class="msg warn hidden">Bu sayfa dosya olarak açılmış. YouTube oynatıcısı çoğu zaman böyle açılmaz. Sayfayı bir web adresine (https) yükleyip öyle aç.</div>
 
-- Kullanıcı YouTube linki yapıştırır, "Bul"a basar.
-- YouTube IFrame Player API ile video oynar. Başlık ve kanal otomatik gelir, tarih elle girilir.
-- "Şu an = başlangıç" ve "Şu an = bitiş" düğmeleriyle bölüm işaretlenir; zamanlar elle de girilebilir. Bölüm ekle/sil.
-- Bölümler tarayıcıda kaydedilir (localStorage).
-- Reels önizleme: 9:16 kadraj. 16:9 oynatıcı kadraja cover olacak şekilde ortalanıp kırpılır, kontrolsüz, üstte ilerleme çubuğu, altta başlık, kanal, bölüm adı ve kaynak zamanı yazısı.
-- Bir bölüm seçilince sadece başlangıç-bitiş aralığı oynar, bitince döngü yapar. "Hepsini sırayla oynat", ses aç/kapat, başa sar düğmeleri olsun.
-- Her bölümde "Link" düğmesi: https://youtu.be/VIDEO_ID?t=BAŞLANGIÇ_SANİYESİ linkini paylaş/kopyala.
-- Video indirme veya MP4 üretme olmasın.
+<section class="card">
+  <h2>1. Video linki</h2>
+  <div class="row"><input id="url" placeholder="https://www.youtube.com/watch?v=..." inputmode="url"><button id="find">Bul</button></div>
+  <div id="msg" class="msg hidden"></div>
+</section>
+
+<div id="work" class="hidden">
+<section class="card">
+  <h2>2. Bölümleri işaretle</h2>
+  <div class="v16"><div id="mainPlayer"></div></div>
+  <div class="ctl">
+    <button class="s sm" id="back5">◀ 5 sn</button>
+    <button class="s sm" id="fwd5">5 sn ▶</button>
+    <span id="now" style="align-self:center;color:var(--muted);font-size:14px">00:00</span>
+  </div>
+  <div class="grid">
+    <div><label for="title">Video başlığı</label><input id="title" placeholder="Otomatik gelir"></div>
+    <div><label for="channel">Kanal</label><input id="channel" placeholder="Otomatik gelir"></div>
+    <div><label for="date">Yayın tarihi</label><input id="date" placeholder="GG.AA.YYYY"></div>
+    <div><label for="total">Toplam süre</label><input id="total" readonly></div>
+  </div>
+  <label for="topic">Bölüm başlığı</label><input id="topic" value="Bölüm 1">
+  <div class="grid">
+    <div><label for="start">Başlangıç</label><input id="start" value="00:00" inputmode="numeric"><button class="s sm" id="setStart" style="margin-top:8px">Şu an = başlangıç</button></div>
+    <div><label for="end">Bitiş</label><input id="end" value="00:30" inputmode="numeric"><button class="s sm" id="setEnd" style="margin-top:8px">Şu an = bitiş</button></div>
+  </div>
+  <button id="add">+ Bölüm ekle</button>
+  <div id="clips"></div>
+  <p class="hint">Zamanları sen belirlersin. Bölümleri otomatik bulma yoktur.</p>
+</section>
+
+<section class="card">
+  <h2>3. Reels önizleme</h2>
+  <div class="phone" id="phone">
+    <div class="bar"><i id="prog"></i></div>
+    <div class="vwrap"><div id="reelPlayer"></div></div>
+    <div class="shield" id="shield"></div>
+    <div class="ovl">
+      <div class="t" id="ovTitle">Video</div>
+      <div class="c" id="ovChan"></div>
+      <div class="k" id="ovTopic">Bir bölüm seç</div>
+      <div class="z" id="ovTime"></div>
+    </div>
+  </div>
+  <div class="ctl">
+    <button class="sm" id="rPlay">▶ / ❚❚</button>
+    <button class="s sm" id="rRestart">↺ Başa</button>
+    <button class="s sm" id="rLoop">Döngü: açık</button>
+    <button class="s sm" id="rMute">Ses: açık</button>
+    <button class="sm" id="rAll">Hepsini sırayla oynat</button>
+  </div>
+  <p class="hint" id="rtime" style="text-align:center"></p>
+  <p class="hint warn">Önizleme YouTube'un resmi oynatıcısıyla çalışır; video indirilmez ve MP4 dosyası üretilmez. Bölümü paylaşmak için "Link" düğmesiyle o saniyeden açılan YouTube bağlantısını kopyalarsın.</p>
+</section>
+</div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+let apiReady = false, vid = null, main = null, reel = null, mainOK = false, reelOK = false;
+let clips = [], seq = 0, cur = null, poll = null, loop = true, playAll = false, switching = false;
+
+if (location.protocol === 'file:') $('fileWarn').classList.remove('hidden');
+
+function parseId(u) {
+  u = (u || '').trim();
+  const m = u.match(/(?:youtu\.be\/|[?&]v=|shorts\/|embed\/|live\/)([\w-]{11})/);
+  if (m) return m[1];
+  return /^[\w-]{11}$/.test(u) ? u : null;
+}
+function parseTime(s) {
+  s = (s || '').trim(); if (!s) return NaN;
+  const p = s.split(':').map(x => Number(x.replace(',', '.')));
+  if (p.some(n => !Number.isFinite(n) || n < 0)) return NaN;
+  if (p.length === 1) return p[0];
+  if (p.length === 2) return p[0] * 60 + p[1];
+  if (p.length === 3) return p[0] * 3600 + p[1] * 60 + p[2];
+  return NaN;
+}
+function fmt(s) {
+  if (!Number.isFinite(s)) return '';
+  const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = Math.floor(s % 60), z = n => String(n).padStart(2, '0');
+  return h ? `${z(h)}:${z(m)}:${z(x)}` : `${z(m)}:${z(x)}`;
+}
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function msg(t) { const m = $('msg'); m.textContent = t; m.classList.toggle('hidden', !t); }
+
+window.onYouTubeIframeAPIReady = () => { apiReady = true; };
+
+function onErr(e) {
+  const c = e && e.data;
+  const map = { 2: 'Video kimliği geçersiz.', 5: 'Oynatıcı hatası. Sayfayı yenile.', 100: 'Video bulunamadı veya gizli.',
+    101: 'Video sahibi gömülü oynatmaya izin vermiyor.', 150: 'Video sahibi gömülü oynatmaya izin vermiyor.',
+    153: 'Sayfa web adresinden açılmadığı için YouTube oynatmayı reddetti. Sayfayı https adresine yükle.' };
+  msg(map[c] || ('Oynatıcı hatası: ' + c));
+}
+
+function fillInfo() {
+  try {
+    const d = main.getVideoData && main.getVideoData();
+    if (d) {
+      if (d.title && !$('title').value) $('title').value = d.title;
+      if (d.author && !$('channel').value) $('channel').value = d.author;
+    }
+    const du = main.getDuration();
+    if (du > 0) $('total').value = fmt(du);
+  } catch (e) {}
+}
+
+function loadClips() {
+  clips = [];
+  try { clips = JSON.parse(localStorage.getItem('reelkes:' + vid) || '[]'); } catch (e) {}
+  seq = clips.reduce((a, c) => Math.max(a, c.id), 0);
+  $('topic').value = 'Bölüm ' + (clips.length + 1);
+  render();
+}
+function saveClips() { try { localStorage.setItem('reelkes:' + vid, JSON.stringify(clips)); } catch (e) {} }
+
+function init(id) {
+  vid = id; cur = null; stopPoll(); msg('');
+  $('work').classList.remove('hidden');
+  $('title').value = ''; $('channel').value = ''; $('total').value = '';
+  loadClips();
+  if (!main) {
+    main = new YT.Player('mainPlayer', { videoId: id, playerVars: { playsinline: 1, rel: 0 },
+      events: { onReady: () => { mainOK = true; fillInfo(); }, onStateChange: fillInfo, onError: onErr } });
+    reel = new YT.Player('reelPlayer', { videoId: id, playerVars: { controls: 0, playsinline: 1, rel: 0, disablekb: 1, fs: 0, iv_load_policy: 3, modestbranding: 1 },
+      events: { onReady: () => { reelOK = true; }, onError: onErr } });
+  } else {
+    main.cueVideoById(id); reel.cueVideoById(id);
+    setTimeout(fillInfo, 1200);
+  }
+  setInterval(() => { if (mainOK) { try { $('now').textContent = fmt(main.getCurrentTime()); } catch (e) {} } }, 500);
+}
+
+$('find').onclick = () => {
+  const id = parseId($('url').value);
+  if (!id) { msg('Geçerli bir YouTube linki gir.'); return; }
+  if (!apiReady || !window.YT || !YT.Player) { msg('YouTube oynatıcısı yükleniyor veya internet yok. Birkaç saniye sonra tekrar dene.'); return; }
+  if (id === vid) return;
+  init(id);
+};
+$('url').addEventListener('keydown', e => { if (e.key === 'Enter') $('find').click(); });
+
+$('back5').onclick = () => { if (mainOK) main.seekTo(Math.max(0, main.getCurrentTime() - 5), true); };
+$('fwd5').onclick = () => { if (mainOK) main.seekTo(main.getCurrentTime() + 5, true); };
+$('setStart').onclick = () => { if (mainOK) $('start').value = fmt(main.getCurrentTime()); };
+$('setEnd').onclick = () => { if (mainOK) $('end').value = fmt(main.getCurrentTime()); };
+
+$('add').onclick = () => {
+  const start = parseTime($('start').value), end = parseTime($('end').value), topic = $('topic').value.trim() || 'Konu';
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) { alert('Başlangıç ve bitiş zamanlarını kontrol et.'); return; }
+  let du = 0; try { du = main.getDuration(); } catch (e) {}
+  if (du > 0 && end > du + 1) { alert('Bitiş, videonun süresinden uzun olamaz.'); return; }
+  clips.push({ id: ++seq, start, end, topic });
+  saveClips(); render();
+  $('topic').value = 'Bölüm ' + (clips.length + 1);
+  $('start').value = fmt(end); $('end').value = '';
+};
+
+function shareLink(c) { return `https://youtu.be/${vid}?t=${Math.floor(c.start)}`; }
+
+function render() {
+  const root = $('clips'); root.innerHTML = '';
+  clips.forEach(c => {
+    const d = document.createElement('div'); d.className = 'clip';
+    d.innerHTML = `<div class="top"><strong>${esc(c.topic)}</strong><small>${fmt(c.start)}–${fmt(c.end)} · ${fmt(c.end - c.start)}</small></div>
+      <div class="btns"><button class="sm" data-play="${c.id}">Reels'te oynat</button><button class="s sm" data-link="${c.id}">Link</button><button class="s sm" data-del="${c.id}">Sil</button></div>`;
+    root.append(d);
+  });
+  root.querySelectorAll('[data-play]').forEach(b => b.onclick = () => playClip(clips.find(c => c.id == b.dataset.play), false, true));
+  root.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+    const i = clips.findIndex(c => c.id == b.dataset.del);
+    if (clips[i] === cur) { cur = null; stopPoll(); try { reel.pauseVideo(); } catch (e) {} }
+    clips.splice(i, 1); saveClips(); render();
+  });
+  root.querySelectorAll('[data-link]').forEach(b => b.onclick = async () => {
+    const c = clips.find(c => c.id == b.dataset.link), url = shareLink(c);
+    try {
+      if (navigator.share) { await navigator.share({ title: $('title').value || 'Video', text: c.topic, url }); return; }
+      await navigator.clipboard.writeText(url); b.textContent = 'Kopyalandı';
+      setTimeout(() => b.textContent = 'Link', 1500);
+    } catch (e) { prompt('Linki kopyala:', url); }
+  });
+}
+
+function setOverlay(c) {
+  $('ovTitle').textContent = $('title').value || 'Video';
+  $('ovChan').textContent = [$('channel').value, $('date').value].filter(Boolean).join(' · ') + (($('channel').value || $('date').value) ? ' · ' : '') + 'YouTube';
+  $('ovTopic').textContent = c.topic;
+  $('ovTime').textContent = `Kaynak ${fmt(c.start)}–${fmt(c.end)}`;
+}
+
+function playClip(c, fromAll, scroll) {
+  if (!c) return;
+  if (!reelOK) { msg('Oynatıcı henüz hazır değil, birkaç saniye bekle.'); return; }
+  cur = c; playAll = !!fromAll; setOverlay(c);
+  reel.seekTo(c.start, true); reel.playVideo(); startPoll();
+  if (scroll) $('phone').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function nextClip() {
+  let i = clips.indexOf(cur) + 1;
+  if (i >= clips.length) { if (loop) i = 0; else { reel.pauseVideo(); playAll = false; return; } }
+  playClip(clips[i], true, false);
+}
+function stopPoll() { if (poll) clearInterval(poll); poll = null; }
+function startPoll() {
+  stopPoll();
+  poll = setInterval(() => {
+    if (!cur || !reelOK) return;
+    let t = 0; try { t = reel.getCurrentTime(); } catch (e) { return; }
+    const len = cur.end - cur.start, p = (t - cur.start) / len;
+    $('prog').style.width = Math.max(0, Math.min(1, p)) * 100 + '%';
+    $('rtime').textContent = `${fmt(Math.max(0, t - cur.start))} / ${fmt(len)}`;
+    if (t >= cur.end - 0.1 && !switching) {
+      switching = true; setTimeout(() => switching = false, 700);
+      if (playAll) nextClip();
+      else if (loop) reel.seekTo(cur.start, true);
+      else reel.pauseVideo();
+    }
+  }, 150);
+}
+
+function togglePlay() {
+  if (!reelOK) return;
+  if (!cur) { if (clips.length) playClip(clips[0], false, false); return; }
+  if (reel.getPlayerState() === 1) reel.pauseVideo(); else { reel.playVideo(); startPoll(); }
+}
+$('rPlay').onclick = $('shield').onclick = togglePlay;
+$('rRestart').onclick = () => { if (cur) playClip(cur, playAll, false); };
+$('rLoop').onclick = () => { loop = !loop; $('rLoop').textContent = 'Döngü: ' + (loop ? 'açık' : 'kapalı'); };
+$('rMute').onclick = () => {
+  if (!reelOK) return;
+  if (reel.isMuted()) { reel.unMute(); $('rMute').textContent = 'Ses: açık'; } else { reel.mute(); $('rMute').textContent = 'Ses: kapalı'; }
+};
+$('rAll').onclick = () => { if (clips.length) playClip(clips[0], true, true); else msg('Önce en az bir bölüm ekle.'); };
+</script>
+<script src="https://www.youtube.com/iframe_api" async></script>
+</body></html>
